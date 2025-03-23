@@ -1,101 +1,8 @@
-﻿# PeopleApp
+﻿using Microsoft.EntityFrameworkCore;
+using PeopleApp.Api.Entities;
 
-## Setup
-### Project
-- Maak een nieuwe ASP.NET Core Web API applicatie aan met de naam PeopleApp.Api.
-
-| Template    | Configure   | Additional info |
-| ----------- | ----------- | --------------- |
-|![project template](media/createnewproject.png)|![configure template](media/configurenewproject.png)|![project additional info](media/projectinfo.png)|
-
-### Folders & bestanden
-- Verwijder de bestaande WeatherForecastController.cs en WeatherForecast.cs bestanden
-- Zorg voor de volgende folder-structuur en bestanden:
-    ```
-    PeopleApp.Api
-    │- Controllers (empty)
-    │- Data
-        │- AppDbContext.cs    
-    │- Entities
-        │- Department.cs   
-        │- Location.cs
-        │- Person.cs
-    ```
-
-### Packages
-- Installeer onderstaande NuGet packages:
-    -   ```
-        Microsoft.EntityFrameworkCore.SqlServer
-        ``` 
-    -   ```
-        Microsoft.EntityFrameworkCore.Tools
-        ```
-> [!CAUTION]
-> Let op dat je de juiste versie selecteert!
-
-![nuget packages to install](media/nuget.png)
-
-### DbContext
-- Vervolledig de AppDbContext klasse in de Data folder en registreer deze in de DI container van de applicatie. Gebruik hiervoor de PeopleConnection uit het appsettings.json bestand.
-    ```csharp
-    public class AppDbContext : DbContext
-    {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-        public DbSet<Department> Departments { get; set; }
-        public DbSet<Location> Locations { get; set; }
-        public DbSet<Person> People { get; set; }
-    }
-    ```
-	```csharp
-    var connectionString = builder.Configuration.GetConnectionString("PeopleConnection");
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseSqlServer(connectionString);    
-    });
-    ```
-
-### Entities
-- Vervolledig de entity classes
-    ```csharp title="Department.cs"
-    public class Department
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-        public IEnumerable<Person> People { get; set; }
-    }
-    ```
-    ```csharp title="Department.cs"
-    public class Location
-    {
-        public long Id { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public IEnumerable<Person> People { get; set; }
-    }
-    ```
-    ```cs title="Department.cs"
-    public class Person
-    {
-        public long Id { get; set; }
-        public string Firstname { get; set; }
-        public string Surname { get; set; }
-        public Department Department { get; set; }
-        public long DepartmentId { get; set; }
-        public Location Location { get; set; }
-        public long LocationId { get; set; }
-    }
-    ```
-### Migrations
-- Voer de volgende commando's uit in de Package Manager Console:
-    ```
-    Add-Migration Initial
-    Update-Database
-    ```
-
-### Seed Data
-- Maak een nieuw class aan in de Data folder met de naam ```DbInitializer```:
-    ```
+namespace PeopleApp.Api.Data
+{
     public static class DbInitializer
     {
         public static void SeedData(this WebApplication app)
@@ -193,15 +100,6 @@
                 context.SaveChanges();
             }
         }
+
     }
-    ```
-- Zorg nu dat deze methode wordt aangeroepen in de ```Program``` class net voor de applicatie wordt gestart:
-    ```csharp
-    app.SeedData();
-    app.Run();
-    ```
-### Run!
-De applicatie kan nu gestart worden zonder fouten **MAAR** de API heeft nog geen functionaliteit.
-
-![empty swagger page](media/swagger_empty.png)
-
+}
