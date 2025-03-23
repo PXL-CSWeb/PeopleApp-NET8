@@ -213,7 +213,7 @@ De applicatie kan nu gestart worden zonder fouten **MAAR** de API heeft nog geen
     | --- | ---------- | ---- |
     | ![add new controller](media/addcontroller.png) | ![add new controller](media/scoffoldcontroller.png) | ![add new controller](media/controllername.png) |
 
-> [!INFO]
+> [!TIP]
 > Dankzij het ```[Route("api/[controller]")]``` attribuut en de extra endpoint configuratie in Program.cs zullen alle HTTP requests van ```/api/location``` naar deze controller worden geleid. 
 
 ### Dependency Injection
@@ -325,19 +325,19 @@ public async Task<ActionResult<Location>> GetDetails(long id)
 }
 ```
 
-> [!NOTE]
+> [!TIP]
 > Het [HttpGet] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor dat een HTTP GET request naar bv. ```/api/location/1``` naar deze action worden geleid. 
 > - Als de locatie niet gevonden wordt geven we het resultaat van de NotFound methode terug. Dit gaat zorgen voor een 404 code in de response.
 > - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat hebben en in de body een JSON-representatie van het model zal bevatten.
 
-### Test
+### Run!
 - Test de nieuwe action in je browser en met Swagger
 - Maak ten slotte een nieuw request aan in de PeopleApp-collection van Postman
 
 ![swagger getdetails](media/swagger_getdetails.png)
 
-### AddLocation
-#### Model
+## AddLocation
+### Model
 > [!IMPORTANT]  
 > Omdat we onze entities niet altijd willen blootstellen aan de buitenwereld kunnen we ook gebruik maken van specifieke request en response modellen.
 
@@ -350,7 +350,7 @@ public async Task<ActionResult<Location>> GetDetails(long id)
         public string State { get; set; }
     }
     ```
-#### Action
+### Action
 - Maak een nieuwe action aan in de LocationController die een nieuwe locatie toevoegt aan de database
     ```cs
     [HttpPost]
@@ -374,7 +374,7 @@ public async Task<ActionResult<Location>> GetDetails(long id)
         }
     }
     ```
-> [!INFO]
+> [!TIP]
 >   - Het [HttpPost] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor een HTTP POST request naar “/api/location” naar deze action worden geleid. 
 >   - Het parameter model wordt opgevuld met gegevens die MVC in de request body (json) vindt.
 >   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat terug geven en in de body een JSON-representatie van het output model zal bevatten.
@@ -383,8 +383,6 @@ public async Task<ActionResult<Location>> GetDetails(long id)
 ![add location](media/swagger_addlocation.png)
 
 ## UpdateLocation & DeleteLocation
-
-
 
 ```csharp
 [HttpPut]
@@ -431,7 +429,7 @@ public async Task<ActionResult> DeleteLocation(long id)
     }
 }
 ```
-> [!NOTE]
+> [!TIP]
 >   - Het [HttpDelete] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor een HTTP DELETE request naar bv. “/api/location/1” wordt geleid. 
 >   - Als de locatie niet gevonden wordt geven we het resultaat van de NotFound methode terug. Dit gaat zorgen voor een 404 code in de response.
 >   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat hebben met een lege body.
