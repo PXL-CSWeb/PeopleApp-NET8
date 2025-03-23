@@ -417,6 +417,9 @@ public async Task<ActionResult> UpdateLocation(Location model)
 > [!CAUTION]
 > Zorg ervoor dat de People-property van de Location entity **null** is, indien dit een lege lijst is (```new List<Person>()```) zal EF Core namelijk de bestaande records in de database 'updaten' (en dus schrappen aangezien de lijst leeg is).
 
+> [!TIP]
+> Indien er geen content in de response wordt verwacht kan je ook de NoContent methode gebruiken in plaats van de Ok methode. Dit zullen we toepassen in het volgende voorbeeld.
+
 ### Run!
 #### Postman
 ![update request](media/postman_put200.png)
