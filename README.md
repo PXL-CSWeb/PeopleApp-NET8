@@ -39,7 +39,7 @@
         public IEnumerable<Person> People { get; set; }
     }
     ```
-    ```csharp title="Department.cs"
+    ```cs title="Department.cs"
     public class Person
     {
         public long Id { get; set; }
