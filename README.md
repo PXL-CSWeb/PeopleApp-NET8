@@ -205,3 +205,170 @@ De applicatie kan nu gestart worden zonder fouten **MAAR** de API heeft nog geen
 
 ![empty swagger page](media/swagger_empty.png)
 
+## LocationController
+- Voeg een folder ```Api```toe aan de Controllers folder
+- Voeg aan deze folder een nieuwe controller toe met de naam ```LocationController```
+    
+    | Add | Scaffold   | Name |      
+    | --- | ---------- | ---- |
+    | ![add new controller](media/addcontroller.png) | ![add new controller](media/scoffoldcontroller.png) | ![add new controller](media/controllername.png) |
+
+> [!INFO]
+> Dankzij het ```[Route("api/[controller]")]``` attribuut en de extra endpoint configuratie in Program.cs zullen alle HTTP requests van ```/api/location``` naar deze controller worden geleid. 
+
+#### Dependency Injection
+- Voeg de ```AppDbContext``` toe aan de constructor van de ```LocationController``` en wijs deze toe aan een readonly instance variabele.
+    ```cs
+    private readonly AppDbContext _context;
+
+    public LocationController(AppDbContext context)
+    {
+        _context = context;
+    }
+    ```
+### Request
+Elke HTTP request heeft een URl en een *verb* (= methode).
+- De URL bepaalt over welke data het gaat (bv. /api/location)
+- De verb bepaalt welke operatie er moet worden uitgevoerd: 
+    - GET: haal 1 of meer data object op
+    - POST: voeg een data object toe
+    - PUT: pas een bestaand data object aan
+    - DELETE: verwijder een bestaand data object
+
+#### Get
+- Maak een GET methode aan in de ```LocationController``` die alle locaties ophaalt uit de database en teruggeeft als JSON object:
+```csharp
+[HttpGet]
+public async Task<ActionResult<IEnumerable<Location>>> GetLocations()
+{
+    try
+    {
+        var locations = await _context.Locations.ToListAsync();
+        return Ok(locations);
+    }
+    catch (Exception)
+    {
+        return BadRequest();
+    }
+}
+```
+> [!NOTE]  
+> Deze functie geeft een ```ActionResult``` terug. Dit [geniet de voorkeur](https://learn.microsoft.com/en-us/aspnet/core/web-api/action-return-types?view=aspnetcore-8.0#actionresult-vs-iactionresult) ten opzicht van een ```IActionResult``` wanneer het type van het resultaat vast staat.
+> In dit voorbeeld is het type altijd een ```IEnumerable<Location>``` en is een ```ActionResult``` dus de beste keuze.
+
+> [!NOTE]  
+> Omdat een API steeds beschikbaar moet zijn voor inkomende request te behandelen zorgen we er voor dat de functies steeds asynchroon worden uitgevoerd!
+
+### Run!
+Start de applicatie nogmaals en bekijk het resultaat!
+
+![swagger endpoint](media/swagger_getlocations.png)
+
+### JSON
+De data die wordt geretourneerd in een RESTful web service heeft het JSON-formaat (JavaScript Object Notation):
+- Object aangeduid door ```{}```
+- Lijst (reeks) aangeduid door ```[]```
+- Eigenschappen aangeduid door ```"key": "value"```
+
+```json
+[
+  {
+    "id": 1,
+    "city": "Oakland",
+    "state": "CA",
+    "people": null
+  },
+  {
+    "id": 2,
+    "city": "San Jose",
+    "state": "CA",
+    "people": null
+  },
+  {
+    "id": 3,
+    "city": "New York",
+    "state": "NY",
+    "people": null
+  }
+]
+```
+
+## Postman
+Een API kan (beperkt) getest worden met Swagger maar om uitgebreide testen te kunnen doen maken we beter gebruik van een andere tool om HTTP requests op te stellen.
+
+> [!NOTE]
+> Een GET request kan zelfs eenvoudig getest worden met de browser. Start je applicatie opnieuw en surf naar [https://localhost:7034/api/Location](https://localhost:7034/api/Location) om het resultaat te bekijken.
+
+### Download
+Maak een account op [https://www.postman.com](https://www.postman.com) en installeer de desktop agent via [https://www.postman.com/downloads](https://www.postman.com/downloads)
+
+### Collections & request
+- Maak een nieuwe collection aan ```PeopleApp``` en voeg een request toe ```GetLocations```
+
+![add collection](media/postman_collection.png)
+![add request](media/postman_addrequest.png)
+![send request](media/postman_sendrequest.png)
+
+## LocationController
+### Details
+- Voeg een ```GetDetails``` action toe aan de LocationController
+
+```cs
+[HttpGet("{id}")]
+public async Task<ActionResult<Location>> GetDetails(long id)
+{
+    Location? location = await _context.Locations.FindAsync(id);
+    if (location == null)
+    {
+        return NotFound();
+    }
+    return Ok(location);
+}
+```
+
+> [!NOTE]
+> Het [HttpGet] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor dat een HTTP GET request naar bv. ```/api/location/1``` naar deze action worden geleid. 
+> - Als de locatie niet gevonden wordt geven we het resultaat van de NotFound methode terug. Dit gaat zorgen voor een 404 code in de response.
+> - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat hebben en in de body een JSON-representatie van het model zal bevatten.
+
+### Test
+- Test de nieuwe action in je browser en met Swagger
+- Maak ten slotte een nieuw request aan in de PeopleApp-collection van Postman
+
+![swagger getdetails](media/swagger_getdetails.png)
+
+### AddLocation
+#### Model
+- Maak een nieuwe folder ```Models``` aan in de root van de applicatie
+- Voeg een nieuwe class ```CreateLocationRequest``` toe aan deze folder
+    ```csharp
+    public class CreateLocationRequest
+    {
+        public string City { get; set; }
+        public string State { get; set; }
+    }
+    ```
+#### Action
+- Maak een nieuwe action aan in de LocationController
+```cs
+[HttpPost]
+public async Task<ActionResult<Location>> AddLocation(CreateLocationRequest request)
+{
+    try
+    {
+        Location location = new Location
+        {
+            City = request.City,
+            State = request.State
+        };
+        await _context.Locations.AddAsync(location);
+        await _context.SaveChangesAsync();
+                
+        return Ok(location);
+    }
+    catch (Exception)
+    {
+        return BadRequest();
+    }
+}
+```
