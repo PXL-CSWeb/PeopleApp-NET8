@@ -95,7 +95,7 @@ namespace PeopleApp.Api.Controllers.Api
                 }
                 _context.Locations.Remove(location);
                 await _context.SaveChangesAsync();
-                return Ok();
+                return NoContent();
             }
             catch (Exception)
             {

@@ -2,7 +2,7 @@
 
 ## Setup
 ### Project
-- Maak een nieuwe ASP.NET Core Web API applicatie aan met de naam PeopleApp.Api.
+- Voeg een nieuwe ASP.NET Core Web API applicatie toe aan de bestaande solution met de naam PeopleApp.Api.
 
 | Template    | Configure   | Additional info |
 | ----------- | ----------- | --------------- |
@@ -334,7 +334,12 @@ public async Task<ActionResult<Location>> GetDetails(long id)
 - Test de nieuwe action in je browser en met Swagger
 - Maak ten slotte een nieuw request aan in de PeopleApp-collection van Postman
 
+#### Swagger
 ![swagger getdetails](media/swagger_getdetails.png)
+
+#### Postman
+![postman getdetails](media/postman_get200.png)
+![postman getdetails notfound](media/postman_get404.png)
 
 ## AddLocation
 ### Model
@@ -379,10 +384,14 @@ public async Task<ActionResult<Location>> GetDetails(long id)
 >   - Het parameter model wordt opgevuld met gegevens die MVC in de request body (json) vindt.
 >   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat terug geven en in de body een JSON-representatie van het output model zal bevatten.
 
-#### Run!
+### Run!
+#### Swagger
 ![add location](media/swagger_addlocation.png)
 
-## UpdateLocation & DeleteLocation
+#### Postman
+![postman addlocation](media/postman_post200.png)
+
+## UpdateLocation
 
 ```csharp
 [HttpPut]
@@ -408,6 +417,11 @@ public async Task<ActionResult> UpdateLocation(Location model)
 > [!CAUTION]
 > Zorg ervoor dat de People-property van de Location entity **null** is, indien dit een lege lijst is (```new List<Person>()```) zal EF Core namelijk de bestaande records in de database 'updaten' (en dus schrappen aangezien de lijst leeg is).
 
+### Run!
+#### Postman
+![update request](media/postman_put200.png)
+
+## DeleteLocation
 ```csharp
 [HttpDelete("{id}")]
 public async Task<ActionResult> DeleteLocation(long id)
@@ -421,7 +435,7 @@ public async Task<ActionResult> DeleteLocation(long id)
         }
         _context.Locations.Remove(location);
         await _context.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
     catch (Exception)
     {
@@ -437,4 +451,21 @@ public async Task<ActionResult> DeleteLocation(long id)
 ### Run!
 - Maak ook voor de PUT en de DELETE request een postman-request aan
 
+#### Swagger
 ![update & delete request](media/swagger_updatedelete.png)
+
+#### Postman
+![delete request](media/postman_delete200.png)
+![delete request](media/postman_delete404.png)
+
+## Best practices
+
+> [!IMPORTANT]  
+> - **Gebruik bij voorkeur een repository- of een service-class om de database logica (dbContext) te encapsuleren.** Enkel voor demo doeleinden zoals dit labo wordt een dbContext rechtstreeks in een controller geïnjecteerd.
+- Gebruik altijd asynchrone methodes/functies in een API, zeker bij het werken met databases en/of bestanden.
+- Gebruik altijd de juiste HTTP status codes in je responses.
+- Gebruik altijd de juiste HTTP verbs voor de juiste acties.
+
+# Oefening
+- Maak 2 nieuwe controllers aan voor de entities ```Department``` en ```Person```
+- Voeg de nodige actions toe om deze entities te beheren
