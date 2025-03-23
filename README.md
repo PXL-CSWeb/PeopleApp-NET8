@@ -65,16 +65,16 @@
         public IEnumerable<Person> People { get; set; }
     }
     ```
-    ```csharp title="Department.cs"
+    ```csharp title="Location.cs"
     public class Location
     {
         public long Id { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public IEnumerable<Person> People { get; set; }
+        public IEnumerable<Person>? People { get; set; }
     }
     ```
-    ```cs title="Department.cs"
+    ```cs title="Person.cs"
     public class Person
     {
         public long Id { get; set; }
@@ -216,7 +216,7 @@ De applicatie kan nu gestart worden zonder fouten **MAAR** de API heeft nog geen
 > [!INFO]
 > Dankzij het ```[Route("api/[controller]")]``` attribuut en de extra endpoint configuratie in Program.cs zullen alle HTTP requests van ```/api/location``` naar deze controller worden geleid. 
 
-#### Dependency Injection
+### Dependency Injection
 - Voeg de ```AppDbContext``` toe aan de constructor van de ```LocationController``` en wijs deze toe aan een readonly instance variabele.
     ```cs
     private readonly AppDbContext _context;
@@ -235,7 +235,7 @@ Elke HTTP request heeft een URl en een *verb* (= methode).
     - PUT: pas een bestaand data object aan
     - DELETE: verwijder een bestaand data object
 
-#### Get
+## GetLocations
 - Maak een GET methode aan in de ```LocationController``` die alle locaties ophaalt uit de database en teruggeeft als JSON object:
 ```csharp
 [HttpGet]
@@ -309,8 +309,7 @@ Maak een account op [https://www.postman.com](https://www.postman.com) en instal
 ![add request](media/postman_addrequest.png)
 ![send request](media/postman_sendrequest.png)
 
-## LocationController
-### Details
+## GetDetails
 - Voeg een ```GetDetails``` action toe aan de LocationController
 
 ```cs
@@ -339,6 +338,9 @@ public async Task<ActionResult<Location>> GetDetails(long id)
 
 ### AddLocation
 #### Model
+> [!IMPORTANT]  
+> Omdat we onze entities niet altijd willen blootstellen aan de buitenwereld kunnen we ook gebruik maken van specifieke request en response modellen.
+
 - Maak een nieuwe folder ```Models``` aan in de root van de applicatie
 - Voeg een nieuwe class ```CreateLocationRequest``` toe aan deze folder
     ```csharp
@@ -349,22 +351,54 @@ public async Task<ActionResult<Location>> GetDetails(long id)
     }
     ```
 #### Action
-- Maak een nieuwe action aan in de LocationController
-```cs
-[HttpPost]
-public async Task<ActionResult<Location>> AddLocation(CreateLocationRequest request)
+- Maak een nieuwe action aan in de LocationController die een nieuwe locatie toevoegt aan de database
+    ```cs
+    [HttpPost]
+    public async Task<ActionResult<Location>> AddLocation(CreateLocationRequest request)
+    {
+        try
+        {
+            Location location = new Location
+            {
+                City = request.City,
+                State = request.State
+            };
+            await _context.Locations.AddAsync(location);
+            await _context.SaveChangesAsync();
+                
+            return Ok(location);
+        }
+        catch (Exception)
+        {
+            return BadRequest();
+        }
+    }
+    ```
+> [!INFO]
+>   - Het [HttpPost] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor een HTTP POST request naar “/api/location” naar deze action worden geleid. 
+>   - Het parameter model wordt opgevuld met gegevens die MVC in de request body (json) vindt.
+>   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat terug geven en in de body een JSON-representatie van het output model zal bevatten.
+
+#### Run!
+![add location](media/swagger_addlocation.png)
+
+## UpdateLocation & DeleteLocation
+
+
+
+```csharp
+[HttpPut]
+public async Task<ActionResult> UpdateLocation(Location model)
 {
     try
     {
-        Location location = new Location
+        _context.Locations.Update(model);
+        int rows = await _context.SaveChangesAsync();
+        if (rows == 0)
         {
-            City = request.City,
-            State = request.State
-        };
-        await _context.Locations.AddAsync(location);
-        await _context.SaveChangesAsync();
-                
-        return Ok(location);
+            return NotFound();
+        }
+        return Ok();
     }
     catch (Exception)
     {
@@ -372,3 +406,37 @@ public async Task<ActionResult<Location>> AddLocation(CreateLocationRequest requ
     }
 }
 ```
+
+> [!CAUTION]
+> Zorg ervoor dat de People-property van de Location entity **null** is, indien dit een lege lijst is (```new List<Person>()```) zal EF Core namelijk de bestaande records in de database 'updaten' (en dus schrappen aangezien de lijst leeg is).
+
+```csharp
+[HttpDelete("{id}")]
+public async Task<ActionResult> DeleteLocation(long id)
+{
+    try
+    {
+        Location? location = await _context.Locations.FindAsync(id);
+        if (location == null)
+        {
+            return NotFound();
+        }
+        _context.Locations.Remove(location);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+    catch (Exception)
+    {
+        return BadRequest();
+    }
+}
+```
+> [!INFO]
+>   - Het [HttpDelete] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor een HTTP DELETE request naar bv. “/api/location/1” wordt geleid. 
+>   - Als de locatie niet gevonden wordt geven we het resultaat van de NotFound methode terug. Dit gaat zorgen voor een 404 code in de response.
+>   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat hebben met een lege body.
+
+### Run!
+- Maak ook voor de PUT en de DELETE request een postman-request aan
+
+![update & delete request](media/swagger_updatedelete.png)

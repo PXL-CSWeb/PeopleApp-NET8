@@ -64,6 +64,43 @@ namespace PeopleApp.Api.Controllers.Api
             }
         }
 
+        [HttpPut]
+        public async Task<ActionResult> UpdateLocation(Location model)
+        {
+            try
+            {
+                _context.Locations.Update(model);
+                int rows = await _context.SaveChangesAsync();
+                if (rows == 0)
+                {
+                    return NotFound();
+                }
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
 
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteLocation(long id)
+        {
+            try
+            {
+                Location? location = await _context.Locations.FindAsync(id);
+                if (location == null)
+                {
+                    return NotFound();
+                }
+                _context.Locations.Remove(location);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
     }
 }
