@@ -446,7 +446,7 @@ public async Task<ActionResult> DeleteLocation(long id)
 > [!TIP]
 >   - Het [HttpDelete] attribuut (in combinatie met het [Route] attribuut van de controller) zorgt ervoor een HTTP DELETE request naar bv. “/api/location/1” wordt geleid. 
 >   - Als de locatie niet gevonden wordt geven we het resultaat van de NotFound methode terug. Dit gaat zorgen voor een 404 code in de response.
->   - De Ok methode zorgt ervoor dat de HTTP response een 200 code gaat hebben met een lege body.
+>   - De NoContent methode zorgt ervoor dat de HTTP response een 204 code gaat hebben (met een lege body).
 
 ### Run!
 - Maak ook voor de PUT en de DELETE request een postman-request aan
